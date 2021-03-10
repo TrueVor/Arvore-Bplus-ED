@@ -10,85 +10,29 @@ class arvoreB {
     private:
         pacoteIndice* Raiz;
         unsigned numPacotes;
-        int posPrimeiroPacote;
-        int proxPosicaoVazia; 
         string nomeArquivo; 
-        inline bool cabecalhoEhConsistente(const cabecalhoArqSS& umCabecalho);
-        void atualizarCabecalhoNoArquivo();
         void gravarPacoteNoArquivo(pacoteIndice* umPacote, unsigned posicao);
         void lerPacoteDoArquivo(pacoteIndice* umPacote, unsigned posicao);
-        unsigned encontrarProxPosDisponivel();
-        unsigned encontrarPacoteParaInsercao(pacoteIndice* umPacote, Indice umDado);
         pacoteIndice* dividirPacote(pacoteIndice* umPacote, unsigned posNovoPacote); 
         Indice buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chave);       
     public:
         arvoreB();
         ~arvoreB();
-        void inserirDado(Indice umDado);
+        void promover(int Pos1, int Pos2, unsigned Chave);
+        pacoteIndice* PromoverAux(pacoteIndice* umPacote, unsigned Chave, Indice &itemPromovido);
         void imprimir();
         void depurar();
         Indice buscar(tipoChave chave);
-        /* 
-        void remover(tipoChave chave);
-        */
 };
 
 arvoreB::arvoreB() {
     Raiz = NULL;
-    nomeArquivo = "teste2.dat";
-    ifstream arqEntrada(nomeArquivo);
-    cabecalhoArqSS cabecalho;
-
-    // verifica se o arquivo existe, se sim, lê o cabeçalho 
-    // e verifica se os dados são consistentes com a configuração
-    // do sequence set
-    if ( arqEntrada ) {
-        arqEntrada.read((char*) &cabecalho, sizeof(cabecalhoArqSS));
-        arqEntrada.close();
-        if (not cabecalhoEhConsistente(cabecalho)) {
-            throw runtime_error("Aplicação usa configuração diferente das usadas no arquivo");
-        }
-        // atualiza os dados do sequence set de acordo com o cabeçalho do arquivo
-        numPacotes = cabecalho.numPacotes;
-        posPrimeiroPacote = cabecalho.posPrimeiroPacote;
-        proxPosicaoVazia = cabecalho.proxPosicaoVazia;
-    } 
-    // não existe o arquivo de entrada ainda, inicializa novo sequence set
-    // e salva o cabeçalho no arquivo
-    else { 
-        numPacotes = 0;
-        posPrimeiroPacote = POS_INVALIDA;
-        proxPosicaoVazia = POS_INVALIDA;
-        // cria o arquivo
-        ofstream ArqSaida(nomeArquivo);
-        ArqSaida.close();
-        atualizarCabecalhoNoArquivo();
-    }    
+    nomeArquivo = "indice.dat";
+    numPacotes = 0;
 }
 
 arvoreB::~arvoreB() {
-    // apenas atualiza o cabeçalho, para garantir que esteja tudo ok
-    atualizarCabecalhoNoArquivo(); 
-}
-
-bool arvoreB::cabecalhoEhConsistente(const cabecalhoArqSS& umCabecalho) {
-    return ((umCabecalho.capacidadeMaxPacote == CAP_PACOTE)
-             and (umCabecalho.capacidadeMinPacote == MIN_PACOTE)
-             and (umCabecalho.posicaoMeio == POS_MEIO));    
-}
-
-void arvoreB::atualizarCabecalhoNoArquivo() {
-    cabecalhoArqSS cabecalho; 
-    cabecalho.capacidadeMaxPacote = CAP_PACOTE;
-    cabecalho.capacidadeMinPacote = MIN_PACOTE;
-    cabecalho.posicaoMeio = POS_MEIO;
-    cabecalho.numPacotes = numPacotes;
-    cabecalho.posPrimeiroPacote = posPrimeiroPacote;
-    cabecalho.proxPosicaoVazia = proxPosicaoVazia;
-    // precisa ser fstream para não apagar o arquivo já existente
-    fstream arqSaida(nomeArquivo, ios::in | ios::out);
-    arqSaida.write((const char*) &cabecalho, sizeof(cabecalhoArqSS));
-    arqSaida.close();    
+    delete Raiz;
 }
 
 void arvoreB::lerPacoteDoArquivo(pacoteIndice* umPacote, unsigned posicao) {
@@ -111,94 +55,6 @@ void arvoreB::gravarPacoteNoArquivo(pacoteIndice* umPacote, unsigned posicao) {
     arqSaida.close();   
 }
 
-unsigned arvoreB::encontrarProxPosDisponivel() {
-    // se não tem pacote vazio no meio do arquivo
-    // então a próxima posição disponível será uma posição a mais
-    // que a última do arquivo (numPacotes-1)
-    if (proxPosicaoVazia == POS_INVALIDA) {
-        return numPacotes;  
-    } else {
-        // este trecho código só é útil com remoção
-        // como ainda não temos remoção, então gera exceção
-        throw runtime_error("Não era para proxPosicaoVazia ser diferente de POS_INVALIDA");
-
-        // reaproveitar primeira posição vazia
-        unsigned posicao = proxPosicaoVazia;
-        pacoteIndice* pacoteInvalido = new pacoteIndice();
-        lerPacoteDoArquivo(pacoteInvalido, proxPosicaoVazia);
-        proxPosicaoVazia = pacoteInvalido->posProximoPacote;
-        return posicao; 
-    }
-}
-
-
-
-void arvoreB::inserirDado(Indice umDado) {
-    unsigned posicao;
-    pacoteIndice* pacoteDestino = new pacoteIndice();
-    posicao = encontrarPacoteParaInsercao(pacoteDestino, umDado);
-    pacoteDestino->posicao = posicao;
-    // pacote está cheio, precisa dividir
-    if ( pacoteDestino->cheio() ) {
-        unsigned posicaoNovoPacote = encontrarProxPosDisponivel();
-        pacoteIndice* novoPacote = dividirPacote(pacoteDestino, posicaoNovoPacote); 
-        novoPacote->posicao = posicaoNovoPacote; 
-        if ( umDado.chave > novoPacote->elementos[0].chave )
-            novoPacote->inserir(umDado);
-        else 
-            pacoteDestino->inserir(umDado);
-        gravarPacoteNoArquivo(pacoteDestino, posicao);
-        gravarPacoteNoArquivo(novoPacote, posicaoNovoPacote);
-        delete novoPacote;
-        numPacotes++;
-        atualizarCabecalhoNoArquivo();
-    }
-    else {
-        if(Raiz == NULL)
-            Raiz = pacoteDestino;
-        pacoteDestino->inserir(umDado);
-        gravarPacoteNoArquivo(pacoteDestino, posicao);
-    }
-    delete pacoteDestino;
-}
-
-// o método encontrarPacoteParaInsercao retorna dois elementos:
-// um pacote, já carregado do disco, em que será feita a inserção
-// e a posição relativa desse pacote no disco, para facilitar
-// a gravação posterior, após alterações
-// o método recebe um pacote recém-criado e o dado para busca
-unsigned arvoreB::encontrarPacoteParaInsercao(pacoteIndice* umPacote, Indice umDado) {
-    // caso vetor expansível esteja vazio, criar primeiro pacote
-    if (posPrimeiroPacote == POS_INVALIDA) {
-        posPrimeiroPacote = encontrarProxPosDisponivel();
-        numPacotes = 1;
-        atualizarCabecalhoNoArquivo();
-        return posPrimeiroPacote;
-    }
-    // sequence set não está vazio: procura o pacote para inserir o elemento
-    else {
-        pacoteIndice* proximoPacote = new pacoteIndice();
-        lerPacoteDoArquivo(umPacote, posPrimeiroPacote);
-        if(umPacote->posProximoPacote != POS_INVALIDA) {
-            lerPacoteDoArquivo(proximoPacote, umPacote->posProximoPacote);
-        }
-        unsigned posicao = posPrimeiroPacote;
-
-        // este laço vai lendo pacotes do disco, enquanto a chave
-        // for maior que os valores do pacote atual
-        while ( (umPacote->posProximoPacote != POS_INVALIDA)
-                 and (umPacote->chaveEhMaiorQueTodos(umDado.chave))
-                 and (not proximoPacote->chaveEhMenorQueTodos(umDado.chave)) ) {
-            posicao = umPacote->posProximoPacote;
-            lerPacoteDoArquivo(umPacote, posicao);
-            lerPacoteDoArquivo(proximoPacote, umPacote->posProximoPacote);
-        }
-        return posicao;
-    }
-}
-
-
-
 pacoteIndice* arvoreB::dividirPacote(pacoteIndice* umPacote, unsigned posNovoPacote) {
     pacoteIndice* novo = new pacoteIndice();
     // copia metade superior dos dados do pacote atual para o novo
@@ -218,32 +74,13 @@ pacoteIndice* arvoreB::dividirPacote(pacoteIndice* umPacote, unsigned posNovoPac
         novaRaiz->Filhos[0] = umPacote;
         novaRaiz->Filhos[1] = novo;
         novaRaiz->elementos[0] = novo->elementos[0];
+        Raiz = novaRaiz;
     }
     return novo;
 }
 
 Indice arvoreB::buscar(tipoChave chave) {
-    if (posPrimeiroPacote == POS_INVALIDA) {
-        throw runtime_error("Busca: Sequence Set vazio.");
-    }
-    // sequence set não está vazio: 
-    // procura o pacote que poderia conter o elemento
-    else {
-        pacoteIndice* umPacote = new pacoteIndice();
-        lerPacoteDoArquivo(umPacote, posPrimeiroPacote);
 
-        // este laço vai lendo pacotes do disco, enquanto a chave
-        // for maior que os valores do pacote atual
-        while ( (umPacote->posProximoPacote != POS_INVALIDA)
-                 and (umPacote->chaveEhMaiorQueTodos(chave)) ) {
-            lerPacoteDoArquivo(umPacote, umPacote->posProximoPacote);
-        }
-        // ou o dado está no pacote que saiu do while 
-        // ou não existe no sequence set - precisa agora buscar o elemento no 
-        // vetor de elementos
-
-        return buscaBinaria(umPacote->elementos, 0, umPacote->numElementos-1, chave);
-    } 
 }
 
 //funcao de busca binaria recursiva
@@ -263,51 +100,38 @@ Indice arvoreB::buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chav
     } 
 }
 
+void arvoreB::promover(int Pos1, int Pos2, unsigned Chave){
+    if(Raiz == NULL){
+        Raiz = new pacoteIndice();
+        Raiz->elementos[0].chave = Chave;
+        Raiz->numElementos = 1;
+    } else {
+        Indice ItemPromovido;
+        ItemPromovido.chave = 0;
+        pacoteIndice* Novo = PromoverAux(Raiz, Chave, ItemPromovido);
+        if(Novo != NULL){
+            pacoteIndice* Antigo = Raiz;
+            Raiz = new pacoteIndice();
+            Raiz->elementos[0] = ItemPromovido;
+            Raiz->numElementos = 1;
+            Raiz->Filhos[0] = Antigo;
+            Raiz->Filhos[1] = Novo;
+        }
+
+
+    }
+}
+
+pacoteIndice* arvoreB::PromoverAux(pacoteIndice* umPacote, unsigned Chave, Indice &itemPromovido){
+    
+}
 
 void arvoreB::imprimir() {
-    if (numPacotes > 0) {
-        pacoteIndice* auxiliar = new pacoteIndice();
-        lerPacoteDoArquivo(auxiliar,posPrimeiroPacote);
-        
-        while (auxiliar->posProximoPacote != POS_INVALIDA) {
-            auxiliar->imprimir();
-            cout << "->";
-            lerPacoteDoArquivo(auxiliar,auxiliar->posProximoPacote);
-        }
-        auxiliar->imprimir();
-        delete auxiliar;
-    }
-    cout << endl;  
+
 }
 
 void arvoreB::depurar() {
-    cout << "-*- Dados do Sequence Set -*-" << endl
-         << "Número de pacotes: " << numPacotes << endl
-         << "Posição do primeiro pacote: " << posPrimeiroPacote << endl
-         << "Próxima posição vazia (-1 se não tiver remoção): " << proxPosicaoVazia << endl;
-    if (numPacotes > 0) {
-        cout << "Dados dos pacotes no formato: "
-             << "{posição do pacote}(número de elementos/próximo pacote)[elementos]"
-             << endl;
-        pacoteIndice* auxiliar = new pacoteIndice();
-        unsigned posicao = posPrimeiroPacote;
-        lerPacoteDoArquivo(auxiliar,posPrimeiroPacote);
-        
-        while (auxiliar->posProximoPacote != POS_INVALIDA) {
-            cout << "{" << posicao << "}" 
-                 << "(" << auxiliar->numElementos << "/" 
-                 << auxiliar->posProximoPacote << ")";
-            auxiliar->imprimir();
-            cout << "->";
-            posicao = auxiliar->posProximoPacote;
-            lerPacoteDoArquivo(auxiliar,auxiliar->posProximoPacote);
-        }
-        cout << "(" << auxiliar->numElementos << "/" 
-             << auxiliar->posProximoPacote << ")";
-        auxiliar->imprimir();
-        delete auxiliar;
-    }
-    cout << endl << "-*- Fim dos Dados -*-" << endl;  
+
 }
 
 
@@ -446,7 +270,8 @@ void sequenceset::inserirDado(dado umDado) {
     if ( pacoteDestino->cheio() ) {
         unsigned posicaoNovoPacote = encontrarProxPosDisponivel();
         pacote* novoPacote = dividirPacote(pacoteDestino, posicaoNovoPacote);
-        novoPacote->posicao = posicaoNovoPacote; 
+        novoPacote->posicao = posicaoNovoPacote;
+        ArvoreB.promover(posicao, posicaoNovoPacote, novoPacote->elementos[0].chave);
         if ( umDado.chave > novoPacote->elementos[0].chave )
             novoPacote->inserir(umDado);
         else 
@@ -512,7 +337,6 @@ pacote* sequenceset::dividirPacote(pacote* umPacote, unsigned posNovoPacote) {
     auxiliar.chave = novo->elementos[0].chave;
     auxiliar.pacoteMenorQueChave = umPacote->posicao;
     auxiliar.pacoteDaChave = posNovoPacote;
-    ArvoreB.inserirDado(auxiliar);
 
     novo->posProximoPacote = umPacote->posProximoPacote;
     umPacote->posProximoPacote = posNovoPacote;

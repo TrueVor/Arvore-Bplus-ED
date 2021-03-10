@@ -53,23 +53,27 @@ bool pacote::chaveEhMenorQueTodos(tipoChave chave) {
 class pacoteIndice {
     friend class arvoreB;
     friend class sequenceset;
-    // classe não possui métodos públicos
-    // objetos da classe são criados e manuseados
-    // apenas pela classe sequenceset
     private:
         pacoteIndice* Pai;
-        pacoteIndice* Filhos[CAP_PACOTE];
+        pacoteIndice* Filhos[CAP_PACOTE+1];
         Indice elementos[CAP_PACOTE];
         unsigned numElementos;
-        int posProximoPacote;
         int posicao;
-        pacoteIndice(): Pai(NULL), numElementos(0), posProximoPacote(POS_INVALIDA) { for(int i = 0; i < CAP_PACOTE; i++) Filhos[i] = NULL; }
         bool cheio() { return (numElementos == CAP_PACOTE); }
         void inserir(Indice umIndice);
         inline bool chaveEhMaiorQueTodos(tipoChave chave);
         inline bool chaveEhMenorQueTodos(tipoChave chave);
         void imprimir();
+    public:
+        pacoteIndice(): Pai(NULL), numElementos(0), posicao(-1) { for(int i = 0; i < CAP_PACOTE+1; i++) Filhos[i] = NULL; }
+        ~pacoteIndice();
 };
+
+pacoteIndice::~pacoteIndice() {
+    for(int i = 0; i < CAP_PACOTE+1; i++){
+        delete Filhos[i];
+    }
+}
 
 void pacoteIndice::inserir(Indice umIndice) {
     int posicao = numElementos - 1;
