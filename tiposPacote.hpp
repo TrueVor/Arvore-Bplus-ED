@@ -57,11 +57,13 @@ class pacoteIndice {
     // objetos da classe são criados e manuseados
     // apenas pela classe sequenceset
     private:
+        pacoteIndice* Pai;
+        pacoteIndice* Filhos[CAP_PACOTE];
         Indice elementos[CAP_PACOTE];
         unsigned numElementos;
         int posProximoPacote;
         int posicao;
-        pacoteIndice(): numElementos(0), posProximoPacote(POS_INVALIDA) { }
+        pacoteIndice(): Pai(NULL), numElementos(0), posProximoPacote(POS_INVALIDA) { for(int i = 0; i < CAP_PACOTE; i++) Filhos[i] = NULL; }
         bool cheio() { return (numElementos == CAP_PACOTE); }
         void inserir(Indice umIndice);
         inline bool chaveEhMaiorQueTodos(tipoChave chave);

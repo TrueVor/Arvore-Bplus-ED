@@ -8,6 +8,7 @@ using namespace std;
 class arvoreB {
     friend class sequenceset;
     private:
+        pacoteIndice* Raiz;
         unsigned numPacotes;
         int posPrimeiroPacote;
         int proxPosicaoVazia; 
@@ -33,6 +34,7 @@ class arvoreB {
 };
 
 arvoreB::arvoreB() {
+    Raiz = NULL;
     nomeArquivo = "teste2.dat";
     ifstream arqEntrada(nomeArquivo);
     cabecalhoArqSS cabecalho;
@@ -152,6 +154,8 @@ void arvoreB::inserirDado(Indice umDado) {
         atualizarCabecalhoNoArquivo();
     }
     else {
+        if(Raiz == NULL)
+            Raiz = pacoteDestino;
         pacoteDestino->inserir(umDado);
         gravarPacoteNoArquivo(pacoteDestino, posicao);
     }
@@ -205,6 +209,16 @@ pacoteIndice* arvoreB::dividirPacote(pacoteIndice* umPacote, unsigned posNovoPac
     umPacote->posProximoPacote = posNovoPacote;
     novo->numElementos = CAP_PACOTE - CAP_PACOTE/2;
     umPacote->numElementos = CAP_PACOTE/2; 
+
+    // Cria-se uma nova raiz como ascendente de ambos os nós
+    // Caso o nó dividido era a raiz
+    if(Raiz->posicao == umPacote->posicao){
+        pacoteIndice* novaRaiz = new pacoteIndice();
+        novaRaiz->numElementos = 1;
+        novaRaiz->Filhos[0] = umPacote;
+        novaRaiz->Filhos[1] = novo;
+        novaRaiz->elementos[0] = novo->elementos[0];
+    }
     return novo;
 }
 
