@@ -56,6 +56,7 @@ class pacoteIndice {
     private:
         pacoteIndice* Pai;
         pacoteIndice* Filhos[CAP_PACOTE+1];
+        int PosFilhosFolha[CAP_PACOTE+1];
         Indice elementos[CAP_PACOTE];
         unsigned numElementos;
         int posicao;
@@ -65,7 +66,7 @@ class pacoteIndice {
         inline bool chaveEhMenorQueTodos(tipoChave chave);
         void imprimir();
     public:
-        pacoteIndice(): Pai(NULL), numElementos(0), posicao(-1) { for(int i = 0; i < CAP_PACOTE+1; i++) Filhos[i] = NULL; }
+        pacoteIndice(): Pai(NULL), numElementos(0), posicao(-1) { for(int i = 0; i < CAP_PACOTE+1; i++){ Filhos[i] = NULL; PosFilhosFolha[i] = -1; } }
         ~pacoteIndice();
 };
 

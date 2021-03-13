@@ -10,16 +10,12 @@ class arvoreB {
     private:
         pacoteIndice* Raiz;
         unsigned numPacotes;
-        string nomeArquivo; 
-        void gravarPacoteNoArquivo(pacoteIndice* umPacote, unsigned posicao);
-        void lerPacoteDoArquivo(pacoteIndice* umPacote, unsigned posicao);
         pacoteIndice* dividirPacote(pacoteIndice* umPacote, unsigned posNovoPacote); 
         Indice buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chave);       
     public:
         arvoreB();
         ~arvoreB();
         void promover(int Pos1, int Pos2, unsigned Chave);
-        pacoteIndice* PromoverAux(pacoteIndice* umPacote, unsigned Chave, Indice &itemPromovido);
         void imprimir();
         void depurar();
         Indice buscar(tipoChave chave);
@@ -27,32 +23,11 @@ class arvoreB {
 
 arvoreB::arvoreB() {
     Raiz = NULL;
-    nomeArquivo = "indice.dat";
     numPacotes = 0;
 }
 
 arvoreB::~arvoreB() {
     delete Raiz;
-}
-
-void arvoreB::lerPacoteDoArquivo(pacoteIndice* umPacote, unsigned posicao) {
-     // pula o cabeçalho do arquivo e o número de páginas anteriores
-    unsigned posArq = sizeof(cabecalhoArqSS) + posicao*sizeof(pacoteIndice);  
-    fstream arqEntrada(nomeArquivo, ios::in | ios::out);
-    arqEntrada.seekg(posArq);
-    arqEntrada.read((char*) umPacote, sizeof(pacoteIndice));
-    arqEntrada.close();    
-}
-
-
-void arvoreB::gravarPacoteNoArquivo(pacoteIndice* umPacote, unsigned posicao) {
-     // pula o cabeçalho do arquivo e o número de páginas anteriores
-    unsigned posArq = sizeof(cabecalhoArqSS) + posicao*sizeof(pacoteIndice); 
-    // precisa ser fstream para não apagar o arquivo já existente
-    fstream arqSaida(nomeArquivo, ios::in | ios::out);
-    arqSaida.seekp(posArq);
-    arqSaida.write((const char*) umPacote, sizeof(pacoteIndice));
-    arqSaida.close();   
 }
 
 pacoteIndice* arvoreB::dividirPacote(pacoteIndice* umPacote, unsigned posNovoPacote) {
@@ -106,24 +81,20 @@ void arvoreB::promover(int Pos1, int Pos2, unsigned Chave){
         Raiz->elementos[0].chave = Chave;
         Raiz->numElementos = 1;
     } else {
-        Indice ItemPromovido;
-        ItemPromovido.chave = 0;
-        pacoteIndice* Novo = PromoverAux(Raiz, Chave, ItemPromovido);
-        if(Novo != NULL){
-            pacoteIndice* Antigo = Raiz;
-            Raiz = new pacoteIndice();
-            Raiz->elementos[0] = ItemPromovido;
-            Raiz->numElementos = 1;
-            Raiz->Filhos[0] = Antigo;
-            Raiz->Filhos[1] = Novo;
+        if(!Raiz->cheio()){
+            int pos = Raiz->numElementos - 1;
+            while(pos >= 0 && Raiz->elementos[pos].chave > Chave){
+                Raiz->elementos[pos+1] = Raiz->elementos[pos];
+                Raiz->Filhos[pos+1] = Raiz->Filhos[pos];
+                pos--;
+            }
+            Raiz->elementos[pos+1].chave = Chave;
+            Raiz->PosFilhosFolha[pos+2] = Pos2;
+            Raiz->numElementos++;
+        } else {
+            
         }
-
-
     }
-}
-
-pacoteIndice* arvoreB::PromoverAux(pacoteIndice* umPacote, unsigned Chave, Indice &itemPromovido){
-    
 }
 
 void arvoreB::imprimir() {
