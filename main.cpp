@@ -5,6 +5,7 @@
     Arquivos utilizados pelo algoritmo:
         -> teste.input (Arquivo que contém as entradas do programa)
         -> teste.dat (Arquivo onde o SequenceSet será salvo)
+        -> teste2.dat (Arquivo onde a Árvore B+ será salva)
 */
 
 #include <iostream>
