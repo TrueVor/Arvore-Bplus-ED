@@ -1,3 +1,12 @@
+/*
+    Trabalho de Estrutura de Dados
+    Comparativo de Processadores para Notebooks
+    Copyright 2020 by Izabelle Tomé, Mateus Margotti, Mateus Fratini
+    Arquivos utilizados pelo algoritmo:
+        -> teste.input (Arquivo que contém as entradas do programa)
+        -> teste.dat (Arquivo onde o SequenceSet será salvo)
+*/
+
 #include <iostream>
 #include <ctime> // para suportar a contagem de tempo na busca pelos elementos
 #include "arvoreBmais.hpp"
