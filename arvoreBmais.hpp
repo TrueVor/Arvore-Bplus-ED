@@ -10,12 +10,13 @@ class arvoreB {
     private:
         pacote* Raiz;
         unsigned numPacotes;
-        pacote* dividirPacote(pacote* umPacote, unsigned posNovoPacote); 
+        pacote* dividirPacote(pacote* umPacote); 
         Indice buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chave);       
     public:
         arvoreB();
         ~arvoreB();
         void promover(pacote* Pacote1, pacote* Pacote2, unsigned Chave);
+        int InserirIndice(pacote* umPacote, unsigned Chave);
         void imprimir();
         void depurar();
         Indice buscar(tipoChave chave);
@@ -30,26 +31,43 @@ arvoreB::~arvoreB() {
     delete Raiz;
 }
 
-pacote* arvoreB::dividirPacote(pacote* umPacote, unsigned posNovoPacote) {
+pacote* arvoreB::dividirPacote(pacote* umPacote) {
     pacote* novo = new pacote();
-    // copia metade superior dos dados do pacote atual para o novo
-    for (unsigned i = 0; i <= CAP_PACOTE/2; i++) {
-        novo->elementos[i] = umPacote->elementos[i + CAP_PACOTE/2];
-    }
-    novo->posProximoPacote = umPacote->posProximoPacote;
-    umPacote->posProximoPacote = posNovoPacote;
-    novo->numElementos = CAP_PACOTE - CAP_PACOTE/2;
-    umPacote->numElementos = CAP_PACOTE/2; 
+    if(umPacote->Pai == NULL){
+        pacote* pai = new pacote();
 
-    // Cria-se uma nova raiz como ascendente de ambos os nós
-    // Caso o nó dividido era a raiz
-    if(Raiz->posicao == umPacote->posicao){
-        pacote* novaRaiz = new pacote();
-        novaRaiz->numElementos = 1;
-        novaRaiz->Filhos[0] = umPacote;
-        novaRaiz->Filhos[1] = novo;
-        novaRaiz->elementos[0] = novo->elementos[0];
-        Raiz = novaRaiz;
+        for(unsigned i = 0; i < CAP_PACOTE/2; i++){
+            novo->elementos[i] = umPacote->elementos[i + (CAP_PACOTE/2) + 1];
+        }
+
+        pai->elementos[0] = umPacote->elementos[CAP_PACOTE/2];
+        pai->numElementos++;
+
+        umPacote->numElementos = CAP_PACOTE/2;
+        novo->numElementos = CAP_PACOTE/2;
+
+        pai->Filhos[0] = umPacote;
+        pai->Filhos[1] = novo;
+
+        umPacote->Pai = pai;
+        novo->Pai = pai;
+        pai->Folha = false;
+        
+        Raiz = pai;
+    } else {
+        for(unsigned i = 0; i < CAP_PACOTE/2; i++){
+            novo->elementos[i] = umPacote->elementos[i + CAP_PACOTE/2 + 1];
+        }
+
+        // promover(umPacote->Pai, umPacote->elementos[CAP_PACOTE/2]);
+        umPacote->numElementos = CAP_PACOTE/2;
+        novo->numElementos = CAP_PACOTE/2;
+
+        // um função promover precisar retornar uma posição para sabermos em q posição
+        // vamos colocar os filhos
+
+        umPacote->Pai->Filhos[0] = umPacote;
+        umPacote->Pai->Filhos[1] = novo;
     }
     return novo;
 }
@@ -75,30 +93,52 @@ Indice arvoreB::buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chav
     } 
 }
 
+int arvoreB::InserirIndice(pacote* umPacote, unsigned Chave){
+    int pos = umPacote->numElementos - 1;
+    while(pos >= 0 && umPacote->elementos[pos].chave > Chave){
+        umPacote->elementos[pos+1] = umPacote->elementos[pos];
+        umPacote->Filhos[pos+1] = umPacote->Filhos[pos];
+        pos--;
+    }
+    umPacote->elementos[pos+1].chave = Chave;
+    umPacote->numElementos++;
+    return pos;
+}
+
 void arvoreB::promover(pacote* Pacote1, pacote* Pacote2, unsigned Chave){
-    if(Raiz == NULL){
+    if(Pacote1->Pai == NULL){ // Raiz é o próprio pacote
+        // Criando raiz
         Raiz = new pacote();
         Raiz->elementos[0].chave = Chave;
         Raiz->numElementos = 1;
         Raiz->Filhos[0] = Pacote1;
         Raiz->Filhos[1] = Pacote2;
         Raiz->Folha = false;
+        Pacote1->Pai = Raiz;
     } else {
-        if(!Raiz->cheio()){
-            int pos = Raiz->numElementos - 1;
-            while(pos >= 0 && Raiz->elementos[pos].chave > Chave){
-                Raiz->elementos[pos+1] = Raiz->elementos[pos];
-                Raiz->Filhos[pos+1] = Raiz->Filhos[pos];
+        if(!Pacote1->Pai->cheio()){
+            int pos = Pacote1->Pai->numElementos - 1;
+            while(pos >= 0 && Pacote1->Pai->elementos[pos].chave > Chave){
+                Pacote1->Pai->elementos[pos+1] = Pacote1->Pai->elementos[pos];
+                Pacote1->Pai->Filhos[pos+1] = Pacote1->Pai->Filhos[pos];
                 pos--;
             }
-            Raiz->elementos[pos+1].chave = Chave;
-            Raiz->Filhos[pos+2] = Pacote2;
-            Raiz->numElementos++;
+            Pacote1->Pai->elementos[pos+1].chave = Chave;
+            Pacote1->Pai->Filhos[pos+2] = Pacote2;
+            Pacote1->Pai->numElementos++;
         } else {
-
+            pacote* novo = dividirPacote(Pacote1->Pai);
+            if(Chave <= Pacote1->Pai->elementos[CAP_PACOTE/2].chave){
+                int pos = InserirIndice(Pacote1->Pai, Chave);
+                Pacote1->Pai->Filhos
+            } else {
+                int pos = InserirIndice(novo, Chave);
+            }
         }
     }
 }
+
+
 
 // a variave tam é só para delimitar o nivel em q esta na arvore,
 // e assim colocar "-" no tam do nivel
@@ -286,7 +326,7 @@ void sequenceset::inserirDado(dado umDado) {
         unsigned posicaoNovoPacote = encontrarProxPosDisponivel();
         pacote* novoPacote = dividirPacote(pacoteDestino, posicaoNovoPacote);
         novoPacote->posicao = posicaoNovoPacote;
-        ArvoreB.promover(posicao, posicaoNovoPacote, novoPacote->elementos[0].chave);
+        ArvoreB.promover(pacoteDestino, novoPacote, novoPacote->elementos[0].chave);
         if ( umDado.chave > novoPacote->elementos[0].chave )
             novoPacote->inserir(umDado);
         else 

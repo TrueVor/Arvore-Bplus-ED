@@ -14,11 +14,11 @@ class pacote {
         pacote* Pai;
         pacote* Filhos[CAP_PACOTE+1];
         dado elementos[CAP_PACOTE];
-        bool Folha; // Boolean para checar se o Pacote é Folha (True) ou Índice (False).
+        bool Folha; // Boolean para checar se o Pacote é Folha (True[Padrão]) ou Índice (False).
         unsigned numElementos;
         int posProximoPacote;
         int posicao;
-        pacote(): Pai(NULL), numElementos(0), posProximoPacote(POS_INVALIDA) { for(int i = 0; i < CAP_PACOTE+1; i++) Filhos[i] = NULL; }
+        pacote(): Pai(NULL), Folha(true), numElementos(0), posProximoPacote(POS_INVALIDA) { for(int i = 0; i < CAP_PACOTE+1; i++) Filhos[i] = NULL; }
         ~pacote();
         bool cheio() { return (numElementos == CAP_PACOTE); }
         void inserir(dado umDado);
