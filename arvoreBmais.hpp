@@ -8,14 +8,14 @@ using namespace std;
 class arvoreB {
     friend class sequenceset;
     private:
-        pacoteIndice* Raiz;
+        pacote* Raiz;
         unsigned numPacotes;
-        pacoteIndice* dividirPacote(pacoteIndice* umPacote, unsigned posNovoPacote); 
+        pacote* dividirPacote(pacote* umPacote, unsigned posNovoPacote); 
         Indice buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chave);       
     public:
         arvoreB();
         ~arvoreB();
-        void promover(int Pos1, int Pos2, unsigned Chave);
+        void promover(pacote* Pacote1, pacote* Pacote2, unsigned Chave);
         void imprimir();
         void depurar();
         Indice buscar(tipoChave chave);
@@ -30,8 +30,8 @@ arvoreB::~arvoreB() {
     delete Raiz;
 }
 
-pacoteIndice* arvoreB::dividirPacote(pacoteIndice* umPacote, unsigned posNovoPacote) {
-    pacoteIndice* novo = new pacoteIndice();
+pacote* arvoreB::dividirPacote(pacote* umPacote, unsigned posNovoPacote) {
+    pacote* novo = new pacote();
     // copia metade superior dos dados do pacote atual para o novo
     for (unsigned i = 0; i <= CAP_PACOTE/2; i++) {
         novo->elementos[i] = umPacote->elementos[i + CAP_PACOTE/2];
@@ -44,7 +44,7 @@ pacoteIndice* arvoreB::dividirPacote(pacoteIndice* umPacote, unsigned posNovoPac
     // Cria-se uma nova raiz como ascendente de ambos os nós
     // Caso o nó dividido era a raiz
     if(Raiz->posicao == umPacote->posicao){
-        pacoteIndice* novaRaiz = new pacoteIndice();
+        pacote* novaRaiz = new pacote();
         novaRaiz->numElementos = 1;
         novaRaiz->Filhos[0] = umPacote;
         novaRaiz->Filhos[1] = novo;
@@ -75,11 +75,14 @@ Indice arvoreB::buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chav
     } 
 }
 
-void arvoreB::promover(int Pos1, int Pos2, unsigned Chave){
+void arvoreB::promover(pacote* Pacote1, pacote* Pacote2, unsigned Chave){
     if(Raiz == NULL){
-        Raiz = new pacoteIndice();
+        Raiz = new pacote();
         Raiz->elementos[0].chave = Chave;
         Raiz->numElementos = 1;
+        Raiz->Filhos[0] = Pacote1;
+        Raiz->Filhos[1] = Pacote2;
+        Raiz->Folha = false;
     } else {
         if(!Raiz->cheio()){
             int pos = Raiz->numElementos - 1;
@@ -89,16 +92,57 @@ void arvoreB::promover(int Pos1, int Pos2, unsigned Chave){
                 pos--;
             }
             Raiz->elementos[pos+1].chave = Chave;
-            Raiz->PosFilhosFolha[pos+2] = Pos2;
+            Raiz->Filhos[pos+2] = Pacote2;
             Raiz->numElementos++;
         } else {
-            
+
         }
     }
 }
 
-void arvoreB::imprimir() {
-
+// a variave tam é só para delimitar o nivel em q esta na arvore,
+// e assim colocar "-" no tam do nivel
+void arvoreB::imprimir(pacote* umPacote, int tam = 0) {
+    int aux1 = 0;
+    
+    // vai entrar se já existir alguma indice na arvore b+
+    if(umPacote->numElementos != 0){
+        // vai rodar de início o próprio pacote
+        for(int i=0; i<tam; i++) cout << "-";
+        cout << "->[";
+        while(umPacote->numElementos > aux1){
+            cout << "(" << umPacote->elementos[aux1].chave << ")";
+            
+            aux1++;
+        }
+        cout << "]" << endl;
+        aux1 = 0;
+        // se os pacotes filhos nao forem folhas
+        // criei essa variavel filhosNaoFolha só pra isso mesmo
+        if(umPacote->filhosNaoFolha){
+            while(umPacote->numElementos >= aux1){
+                imprimir(umPacote->Filhos[aux1], tam+1);
+                aux1++;
+            }
+        }
+        // se forem
+        else{
+            pacote* auxiliar = new pacote();
+            // vai rodar por todas os pacotes em que o indice aponta
+            while(umPacote->numElementos >= aux1){
+                // só pra encontrar o pacote no arquivo
+                // tive q criar essa funçao nessa classe tbm, igual a da classe de baixo,
+                // mas coloquei o nome do arquivo direto ao invés de variavel
+                lerPacoteDoArquivo(auxiliar, umPacote->PosFilhosFolha[aux1]);
+                for(int i=0; i<tam+1; i++) cout << "-";
+                // imprimir o pacote completo com a funçao do pacote
+                cout << "->";
+                auxiliar->imprimir();
+                cout << endl;
+                aux1++;
+            }
+        }
+    }
 }
 
 void arvoreB::depurar() {

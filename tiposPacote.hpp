@@ -5,22 +5,33 @@ using namespace std;
 
 // essa classe também poderia se chamar bloco, pagina, packet ou pedaco
 class pacote {
+    friend class arvoreB;
     friend class sequenceset;
     // classe não possui métodos públicos
     // objetos da classe são criados e manuseados
     // apenas pela classe sequenceset
     private:
+        pacote* Pai;
+        pacote* Filhos[CAP_PACOTE+1];
         dado elementos[CAP_PACOTE];
+        bool Folha; // Boolean para checar se o Pacote é Folha (True) ou Índice (False).
         unsigned numElementos;
         int posProximoPacote;
         int posicao;
-        pacote(): numElementos(0), posProximoPacote(POS_INVALIDA) { }
+        pacote(): Pai(NULL), numElementos(0), posProximoPacote(POS_INVALIDA) { for(int i = 0; i < CAP_PACOTE+1; i++) Filhos[i] = NULL; }
+        ~pacote();
         bool cheio() { return (numElementos == CAP_PACOTE); }
         void inserir(dado umDado);
         inline bool chaveEhMaiorQueTodos(tipoChave chave);
         inline bool chaveEhMenorQueTodos(tipoChave chave);
         void imprimir();
 };
+
+pacote::~pacote() {
+    for(int i = 0; i < CAP_PACOTE+1; i++){
+        delete Filhos[i];
+    }
+}
 
 void pacote::inserir(dado umDado) {
     int posicao = numElementos - 1;
@@ -45,60 +56,5 @@ bool pacote::chaveEhMaiorQueTodos(tipoChave chave) {
 }
 
 bool pacote::chaveEhMenorQueTodos(tipoChave chave) {
-    return ( elementos[0].chave > chave );
-}
-
-
-
-class pacoteIndice {
-    friend class arvoreB;
-    friend class sequenceset;
-    private:
-        pacoteIndice* Pai;
-        pacoteIndice* Filhos[CAP_PACOTE+1];
-        int PosFilhosFolha[CAP_PACOTE+1];
-        Indice elementos[CAP_PACOTE];
-        unsigned numElementos;
-        int posicao;
-        bool cheio() { return (numElementos == CAP_PACOTE); }
-        void inserir(Indice umIndice);
-        inline bool chaveEhMaiorQueTodos(tipoChave chave);
-        inline bool chaveEhMenorQueTodos(tipoChave chave);
-        void imprimir();
-    public:
-        pacoteIndice(): Pai(NULL), numElementos(0), posicao(-1) { for(int i = 0; i < CAP_PACOTE+1; i++){ Filhos[i] = NULL; PosFilhosFolha[i] = -1; } }
-        ~pacoteIndice();
-};
-
-pacoteIndice::~pacoteIndice() {
-    for(int i = 0; i < CAP_PACOTE+1; i++){
-        delete Filhos[i];
-    }
-}
-
-void pacoteIndice::inserir(Indice umIndice) {
-    int posicao = numElementos - 1;
-    // Faz a procura pela posição de inserção do elemento de forma decrescente
-    while ( (posicao >= 0) and umIndice.chave < elementos[posicao].chave) {
-        elementos[posicao+1] = elementos[posicao];
-        posicao--;
-    }
-    elementos[posicao+1] = umIndice;
-    numElementos++;
-}
-
-void pacoteIndice::imprimir() {
-    cout << posicao << "[";
-    for (unsigned i = 0; i < numElementos; i++)
-        cout << "(" << elementos[i].chave << "/" << elementos[i].pacoteMenorQueChave
-            << "/" << elementos[i].pacoteDaChave << ")";
-    cout << "]";
-}
-
-bool pacoteIndice::chaveEhMaiorQueTodos(tipoChave chave) {
-    return ( elementos[numElementos-1].chave < chave );
-}
-
-bool pacoteIndice::chaveEhMenorQueTodos(tipoChave chave) {
     return ( elementos[0].chave > chave );
 }
