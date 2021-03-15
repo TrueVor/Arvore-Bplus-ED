@@ -52,7 +52,7 @@ pacote* arvoreB::dividirPacote(pacote* umPacote) {
         umPacote->Pai = pai;
         novo->Pai = pai;
         pai->Folha = false;
-        
+
         Raiz = pai;
     } else {
         for(unsigned i = 0; i < CAP_PACOTE/2; i++){
@@ -130,9 +130,10 @@ void arvoreB::promover(pacote* Pacote1, pacote* Pacote2, unsigned Chave){
             pacote* novo = dividirPacote(Pacote1->Pai);
             if(Chave <= Pacote1->Pai->elementos[CAP_PACOTE/2].chave){
                 int pos = InserirIndice(Pacote1->Pai, Chave);
-                Pacote1->Pai->Filhos
+                Pacote1->Pai->Filhos[pos+2] = Pacote2;
             } else {
                 int pos = InserirIndice(novo, Chave);
+                novo->Filhos[pos+2] = Pacote2;
             }
         }
     }
