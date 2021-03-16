@@ -10,8 +10,7 @@ class arvoreB {
     private:
         pacote* Raiz;
         unsigned numPacotes;
-        pacote* dividirPacote(pacote* umPacote); 
-        Indice buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chave);       
+        pacote* dividirPacote(pacote* umPacote);     
     public:
         arvoreB();
         ~arvoreB();
@@ -60,7 +59,6 @@ pacote* arvoreB::dividirPacote(pacote* umPacote) {
             novo->elementos[i] = umPacote->elementos[i + CAP_PACOTE/2 + 1];
         }
 
-        // promover(umPacote->Pai, umPacote->elementos[CAP_PACOTE/2]);
         int pos = promoverIndice(umPacote->Pai, umPacote->elementos[CAP_PACOTE/2].chave);
         umPacote->numElementos = CAP_PACOTE/2;
         novo->numElementos = CAP_PACOTE/2;
@@ -68,16 +66,15 @@ pacote* arvoreB::dividirPacote(pacote* umPacote) {
         // um função promover precisar retornar uma posição para sabermos em q posição
         // vamos colocar os filhos
 
-        umPacote->Pai->Filhos[0] = umPacote;
-        umPacote->Pai->Filhos[1] = novo;
+        umPacote->Pai->Filhos[pos] = umPacote;
+        umPacote->Pai->Filhos[pos+1] = novo;
     }
     return novo;
 }
 
 int arvoreB::promoverIndice(pacote* umPacote, unsigned Chave){
     int pos = 0;
-    if(umPacote->Pai == NULL){ // Raiz é o próprio pacote
-        // Criando raiz
+    if(umPacote->Pai == NULL){
         Raiz = new pacote();
         Raiz->elementos[0].chave = Chave;
         Raiz->numElementos = 1;
@@ -92,7 +89,6 @@ int arvoreB::promoverIndice(pacote* umPacote, unsigned Chave){
                 pos--;
             }
             umPacote->Pai->elementos[pos+1].chave = Chave;
-            umPacote->Pai->Filhos[pos+2] = Pacote2;
             umPacote->Pai->numElementos++;
         } else {
             pacote* novo = dividirPacote(umPacote->Pai);
@@ -108,23 +104,6 @@ int arvoreB::promoverIndice(pacote* umPacote, unsigned Chave){
 
 Indice arvoreB::buscar(tipoChave chave) {
 
-}
-
-//funcao de busca binaria recursiva
-Indice arvoreB::buscaBinaria(Indice vetor[], int inicio, int fim, tipoChave chave) {
-    int meio = (inicio+fim)/2;
-
-    if (inicio <= fim) {
-        if (chave > vetor[meio].chave)
-            return buscaBinaria(vetor,meio+1,fim,chave);
-        else if (chave < vetor[meio].chave)
-            return buscaBinaria(vetor,inicio,meio-1,chave);
-        else
-            return vetor[meio];
-    } else { // inicio == fim, ou seja, não há mais o que buscar
-        // retornamos -1 para indicar posição não encontrada
-        throw runtime_error("Busca: elemento não encontrado.");
-    } 
 }
 
 int arvoreB::InserirIndice(pacote* umPacote, unsigned Chave){
@@ -474,7 +453,6 @@ dado sequenceset::buscaBinaria(dado vetor[], int inicio, int fim, tipoChave chav
 
 
 void sequenceset::imprimir() {
-    ArvoreB.imprimir();
 
     if (numPacotes > 0) {
         pacote* auxiliar = new pacote();

@@ -2,7 +2,14 @@ using namespace std;
 
 struct elemento {
     unsigned chave;
-    char valor[10];
+    char modelo[30]; // utilizar este campo como chave
+    char cache[15];
+    unsigned tdp;
+    char frequencia[12];
+    char nucleos[6];
+    float cinebenchR15Single;
+    float cinebenchR15Multi;
+    float cinebenchR20;
 };
 
 struct elementoNaoFolha {
