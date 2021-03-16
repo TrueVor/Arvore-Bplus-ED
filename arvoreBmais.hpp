@@ -19,7 +19,7 @@ class arvoreB {
         int InserirIndice(pacote* umPacote, unsigned Chave);
         void imprimir(pacote* umPacote, int tam = 0);
         void depurar();
-        Indice buscar(tipoChave chave);
+        void buscar(tipoChave chave, pacote* raiz);
 };
 
 arvoreB::arvoreB() {
@@ -102,8 +102,25 @@ int arvoreB::promoverIndice(pacote* umPacote, unsigned Chave){
     return pos;
 }
 
-Indice arvoreB::buscar(tipoChave chave) {
+void arvoreB::buscar(tipoChave chave, pacote* raiz) {
+    if(raiz->Folha) {
+        int aux = 0;
+        while(raiz->numElementos > aux and raiz->elementos[aux].chave != chave) aux++;
 
+        if(aux == raiz->numElementos){
+            cout << "Chave não encontrada";
+        }
+        else{
+            cout << "(" << raiz->elementos[aux].chave << "/" << raiz->elementos[aux].valor << ")";
+        }
+    }
+    else {
+        pacote* auxiliar = raiz;
+        int aux = 0;
+        while(auxiliar->numElementos > aux and chave > auxiliar->elementos[aux].chave) aux++;
+
+        buscar(chave, auxiliar->Filhos[aux]);
+    }
 }
 
 int arvoreB::InserirIndice(pacote* umPacote, unsigned Chave){
