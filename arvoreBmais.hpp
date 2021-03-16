@@ -16,6 +16,7 @@ class arvoreB {
         arvoreB();
         ~arvoreB();
         void promover(pacote* Pacote1, pacote* Pacote2, unsigned Chave);
+        int promoverIndice(pacote* umPacote, unsigned Chave);
         int InserirIndice(pacote* umPacote, unsigned Chave);
         void imprimir();
         void depurar();
@@ -60,6 +61,7 @@ pacote* arvoreB::dividirPacote(pacote* umPacote) {
         }
 
         // promover(umPacote->Pai, umPacote->elementos[CAP_PACOTE/2]);
+        int pos = promoverIndice(umPacote->Pai, umPacote->elementos[CAP_PACOTE/2].chave);
         umPacote->numElementos = CAP_PACOTE/2;
         novo->numElementos = CAP_PACOTE/2;
 
@@ -70,6 +72,38 @@ pacote* arvoreB::dividirPacote(pacote* umPacote) {
         umPacote->Pai->Filhos[1] = novo;
     }
     return novo;
+}
+
+int arvoreB::promoverIndice(pacote* umPacote, unsigned Chave){
+    int pos = 0;
+    if(umPacote->Pai == NULL){ // Raiz é o próprio pacote
+        // Criando raiz
+        Raiz = new pacote();
+        Raiz->elementos[0].chave = Chave;
+        Raiz->numElementos = 1;
+        Raiz->Folha = false;
+        umPacote->Pai = Raiz;
+    } else {
+        if(!umPacote->Pai->cheio()){
+            pos = umPacote->Pai->numElementos - 1;
+            while(pos >= 0 && umPacote->Pai->elementos[pos].chave > Chave){
+                umPacote->Pai->elementos[pos+1] = umPacote->Pai->elementos[pos];
+                umPacote->Pai->Filhos[pos+1] = umPacote->Pai->Filhos[pos];
+                pos--;
+            }
+            umPacote->Pai->elementos[pos+1].chave = Chave;
+            umPacote->Pai->Filhos[pos+2] = Pacote2;
+            umPacote->Pai->numElementos++;
+        } else {
+            pacote* novo = dividirPacote(umPacote->Pai);
+            if(Chave <= umPacote->Pai->elementos[CAP_PACOTE/2].chave){
+                pos = InserirIndice(umPacote->Pai, Chave);
+            } else {
+                pos = InserirIndice(novo, Chave);
+            }
+        }
+    }
+    return pos;
 }
 
 Indice arvoreB::buscar(tipoChave chave) {
