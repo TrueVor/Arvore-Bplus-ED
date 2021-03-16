@@ -18,7 +18,7 @@ class arvoreB {
         void promover(pacote* Pacote1, pacote* Pacote2, unsigned Chave);
         int promoverIndice(pacote* umPacote, unsigned Chave);
         int InserirIndice(pacote* umPacote, unsigned Chave);
-        void imprimir();
+        void imprimir(pacote* umPacote, int tam = 0);
         void depurar();
         Indice buscar(tipoChave chave);
 };
@@ -175,50 +175,48 @@ void arvoreB::promover(pacote* Pacote1, pacote* Pacote2, unsigned Chave){
 
 
 
-// a variave tam é só para delimitar o nivel em q esta na arvore,
-// e assim colocar "-" no tam do nivel
 void arvoreB::imprimir(pacote* umPacote, int tam = 0) {
-    int aux1 = 0;
-    
-    // vai entrar se já existir alguma indice na arvore b+
-    if(umPacote->numElementos != 0){
-        // vai rodar de início o próprio pacote
-        for(int i=0; i<tam; i++) cout << "-";
-        cout << "->[";
-        while(umPacote->numElementos > aux1){
-            cout << "(" << umPacote->elementos[aux1].chave << ")";
-            
-            aux1++;
-        }
-        cout << "]" << endl;
-        aux1 = 0;
-        // se os pacotes filhos nao forem folhas
-        // criei essa variavel filhosNaoFolha só pra isso mesmo
-        if(umPacote->filhosNaoFolha){
-            while(umPacote->numElementos >= aux1){
-                imprimir(umPacote->Filhos[aux1], tam+1);
-                aux1++;
-            }
-        }
-        // se forem
-        else{
-            pacote* auxiliar = new pacote();
-            // vai rodar por todas os pacotes em que o indice aponta
-            while(umPacote->numElementos >= aux1){
-                // só pra encontrar o pacote no arquivo
-                // tive q criar essa funçao nessa classe tbm, igual a da classe de baixo,
-                // mas coloquei o nome do arquivo direto ao invés de variavel
-                lerPacoteDoArquivo(auxiliar, umPacote->PosFilhosFolha[aux1]);
-                for(int i=0; i<tam+1; i++) cout << "-";
-                // imprimir o pacote completo com a funçao do pacote
-                cout << "->";
-                auxiliar->imprimir();
-                cout << endl;
-                aux1++;
-            }
-        }
-    }
-}
+2	    int aux1 = 0;
+3	    
+4	    // vai entrar se já existir alguma indice na arvore b+
+5	    if(umPacote->numElementos != 0){
+6	        // vai rodar de início o próprio pacote
+7	        for(int i=0; i<tam; i++) cout << "-";
+8	        cout << "->[";
+9	        while(umPacote->numElementos > aux1){
+10	            cout << "(" << umPacote->elementos[aux1].chave << ")";
+11	            
+12	            aux1++;
+13	        }
+14	        cout << "]" << endl;
+15	        aux1 = 0;
+16	        // se os pacotes filhos nao forem folhas
+17	        // criei essa variavel filhosNaoFolha só pra isso mesmo
+18	        if(!umPacote->Filhos[0]->Folha){
+19	            while(umPacote->numElementos >= aux1){
+20	                imprimir(umPacote->Filhos[aux1], tam+1);
+21	                aux1++;
+22	            }
+23	        }
+24	        // se forem
+25	        else{
+26	            pacote* auxiliar = new pacote();
+27	            // vai rodar por todas os pacotes em que o indice aponta
+28	            while(umPacote->numElementos >= aux1){
+29	                // só pra encontrar o pacote no arquivo
+30	                // tive q criar essa funçao nessa classe tbm, igual a da classe de baixo,
+31	                // mas coloquei o nome do arquivo direto ao invés de variavel
+32	                lerPacoteDoArquivo(auxiliar, umPacote->Filhos[aux1]);
+33	                for(int i=0; i<tam+1; i++) cout << "-";
+34	                // imprimir o pacote completo com a funçao do pacote
+35	                cout << "->";
+36	                auxiliar->imprimir();
+37	                cout << endl;
+38	                aux1++;
+39	            }
+40	        }
+41	    }
+42	}
 
 void arvoreB::depurar() {
 
